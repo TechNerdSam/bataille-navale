@@ -113,10 +113,18 @@ public class BattleshipPremiumV2 extends JFrame {
         // FR: Actions spécifiques à exécuter lors du changement de panneau.
         // EN: Specific actions to execute when changing panels.
         switch (state) {
-            case PLAYING -> gamePanel.requestFocusInWindow();
-            case HIGHSCORE_SCREEN -> highScoreDisplayPanel.refreshScores();
-            case SHIP_PLACEMENT -> shipPlacementPanel.startPlacementPhase();
-            default -> { /* FR: Aucune action requise. / EN: No action needed. */ }
+            case PLAYING:
+                gamePanel.requestFocusInWindow();
+                break;
+            case HIGHSCORE_SCREEN:
+                highScoreDisplayPanel.refreshScores();
+                break;
+            case SHIP_PLACEMENT:
+                shipPlacementPanel.startPlacementPhase();
+                break;
+            default:
+                /* FR: Aucune action requise. / EN: No action needed. */
+                break;
         }
     }
 
@@ -157,7 +165,12 @@ public class BattleshipPremiumV2 extends JFrame {
         }
         // FR: Lance l'interface graphique sur le thread de dispatch des événements (EDT).
         // EN: Launches the graphical user interface on the Event Dispatch Thread (EDT).
-        SwingUtilities.invokeLater(() -> new BattleshipPremiumV2().setVisible(true));
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new BattleshipPremiumV2().setVisible(true);
+            }
+        });
     }
 
     /**
@@ -204,8 +217,8 @@ public class BattleshipPremiumV2 extends JFrame {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            var g2d = (Graphics2D) g;
-            var gp = new GradientPaint(0, 0, Theme.COLOR_BACKGROUND_START, 0, getHeight(), Theme.COLOR_BACKGROUND_END);
+            Graphics2D g2d = (Graphics2D) g;
+            GradientPaint gp = new GradientPaint(0, 0, Theme.COLOR_BACKGROUND_START, 0, getHeight(), Theme.COLOR_BACKGROUND_END);
             g2d.setPaint(gp);
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
@@ -239,22 +252,22 @@ public class BattleshipPremiumV2 extends JFrame {
     private class MainMenuPanel extends GradientPanel {
         public MainMenuPanel() {
             setLayout(new GridBagLayout());
-            var gbc = new GridBagConstraints();
+            GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(15, 10, 15, 10);
             gbc.gridx = 0;
 
-            var title = new JLabel(APP_TITLE);
+            JLabel title = new JLabel(APP_TITLE);
             title.setFont(Theme.FONT_TITLE);
             title.setForeground(Theme.COLOR_TEXT);
             gbc.gridy = 0;
             add(title, gbc);
 
             gbc.gridy = 1;
-            add(new ModernButton("Nouvelle Partie") {{ addActionListener(_ -> startNewGame()); }}, gbc);
+            add(new ModernButton("Nouvelle Partie") {{ addActionListener(e -> startNewGame()); }}, gbc);
             gbc.gridy = 2;
-            add(new ModernButton("Meilleurs Scores") {{ addActionListener(_ -> showPanel(GameState.HIGHSCORE_SCREEN)); }}, gbc);
+            add(new ModernButton("Meilleurs Scores") {{ addActionListener(e -> showPanel(GameState.HIGHSCORE_SCREEN)); }}, gbc);
             gbc.gridy = 3;
-            add(new ModernButton("Quitter") {{ addActionListener(_ -> System.exit(0)); }}, gbc);
+            add(new ModernButton("Quitter") {{ addActionListener(e -> System.exit(0)); }}, gbc);
         }
     }
 
@@ -267,21 +280,21 @@ public class BattleshipPremiumV2 extends JFrame {
             setOpaque(false);
             setBackground(Theme.COLOR_TRANSPARENT_BG);
             setLayout(new GridBagLayout());
-            var gbc = new GridBagConstraints();
+            GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(10, 10, 10, 10);
             gbc.gridx = 0;
 
-            var pauseLabel = new JLabel("PAUSE");
+            JLabel pauseLabel = new JLabel("PAUSE");
             pauseLabel.setFont(Theme.FONT_TITLE);
             pauseLabel.setForeground(Theme.COLOR_TEXT);
             gbc.gridy = 0; add(pauseLabel, gbc);
 
-            gbc.gridy = 1; add(new ModernButton("Reprendre") {{ addActionListener(_ -> showPanel(GameState.PLAYING)); }}, gbc);
-            gbc.gridy = 2; add(new ModernButton("Menu Principal") {{ addActionListener(_ -> {
+            gbc.gridy = 1; add(new ModernButton("Reprendre") {{ addActionListener(e -> showPanel(GameState.PLAYING)); }}, gbc);
+            gbc.gridy = 2; add(new ModernButton("Menu Principal") {{ addActionListener(e -> {
                 gameEngine.handleGameOverOrQuit();
                 showPanel(GameState.MAIN_MENU);
             }); }}, gbc);
-            gbc.gridy = 3; add(new ModernButton("Quitter le Jeu") {{ addActionListener(_ -> {
+            gbc.gridy = 3; add(new ModernButton("Quitter le Jeu") {{ addActionListener(e -> {
                 gameEngine.handleGameOverOrQuit();
                 System.exit(0);
             }); }}, gbc);
@@ -306,7 +319,7 @@ public class BattleshipPremiumV2 extends JFrame {
             setLayout(new BorderLayout(20, 20));
             setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-            var title = new JLabel("Meilleurs Scores", SwingConstants.CENTER);
+            JLabel title = new JLabel("Meilleurs Scores", SwingConstants.CENTER);
             title.setFont(Theme.FONT_TITLE);
             title.setForeground(Theme.COLOR_TEXT);
             add(title, BorderLayout.NORTH);
@@ -316,13 +329,13 @@ public class BattleshipPremiumV2 extends JFrame {
             scoreArea.setForeground(Theme.COLOR_TEXT);
             scoreArea.setEditable(false);
             
-            var scrollPane = new JScrollPane(scoreArea);
+            JScrollPane scrollPane = new JScrollPane(scoreArea);
             scrollPane.setBorder(BorderFactory.createLineBorder(Theme.COLOR_ACCENT));
             add(scrollPane, BorderLayout.CENTER);
 
-            var buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
             buttonPanel.setOpaque(false);
-            buttonPanel.add(new ModernButton("Retour") {{ addActionListener(_ -> showPanel(GameState.MAIN_MENU)); }});
+            buttonPanel.add(new ModernButton("Retour") {{ addActionListener(e -> showPanel(GameState.MAIN_MENU)); }});
             add(buttonPanel, BorderLayout.SOUTH);
         }
         
@@ -332,16 +345,16 @@ public class BattleshipPremiumV2 extends JFrame {
          */
         public void refreshScores() {
             scoreArea.setText("");
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             gameEngine.getHighScoreManager().loadHighScores(); 
-            var scores = gameEngine.getHighScoreManager().getHighScores();
+            java.util.List<HighScoreEntry> scores = gameEngine.getHighScoreManager().getHighScores();
             if (scores.isEmpty()) {
                 sb.append("\n   Aucun score enregistré pour le moment.");
             } else {
                 sb.append(String.format("\n   %-4s %-15s %10s\n", "Rang", "Joueur", "Score"));
                 sb.append("   ----------------------------------\n");
                 for (int i = 0; i < scores.size(); i++) {
-                    var entry = scores.get(i);
+                    HighScoreEntry entry = scores.get(i);
                     sb.append(String.format("   #%-3d %-15s %10d\n", i + 1, entry.getPlayerName(), entry.getScore()));
                 }
             }
@@ -358,7 +371,7 @@ public class BattleshipPremiumV2 extends JFrame {
         private Ship currentPlacingShip;
         private boolean isHorizontal = true;
         private Point mouseGridPos = new Point(-1, -1);
-        private List<Ship> shipsToPlace;
+        private java.util.List<Ship> shipsToPlace;
 
         public ShipPlacementPanel() {
             this.addMouseListener(this);
@@ -399,12 +412,12 @@ public class BattleshipPremiumV2 extends JFrame {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            var g2d = (Graphics2D) g;
+            Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             // FR: Calcule le décalage pour centrer la grille.
             // EN: Calculates the offset to center the grid.
-            var boardPixelSize = Theme.BOARD_SIZE * Theme.CELL_SIZE;
+            int boardPixelSize = Theme.BOARD_SIZE * Theme.CELL_SIZE;
             int offsetX = (getWidth() - boardPixelSize) / 2;
             int offsetY = (getHeight() - boardPixelSize) / 2;
 
@@ -414,7 +427,7 @@ public class BattleshipPremiumV2 extends JFrame {
             g2d.setColor(Theme.COLOR_TEXT);
             g2d.drawString("Placez vos Navires", getWidth() / 2 - 120, 50);
 
-            var instruction = (currentPlacingShip != null)
+            String instruction = (currentPlacingShip != null)
                 ? "Cliquez pour placer. 'R' pour pivoter. Navire : " + currentPlacingShip.getType() + " (Taille " + currentPlacingShip.getSize() + ")"
                 : "Placement terminé. Lancement du jeu...";
             g2d.setFont(Theme.FONT_TEXT);
@@ -438,7 +451,7 @@ public class BattleshipPremiumV2 extends JFrame {
          * EN: Converts mouse pixel coordinates to grid coordinates.
          */
         private Point getGridCoordinates(MouseEvent e) {
-            var boardPixelSize = Theme.BOARD_SIZE * Theme.CELL_SIZE;
+            int boardPixelSize = Theme.BOARD_SIZE * Theme.CELL_SIZE;
             int offsetX = (getWidth() - boardPixelSize) / 2;
             int offsetY = (getHeight() - boardPixelSize) / 2;
             if (e.getX() >= offsetX && e.getY() >= offsetY) {
@@ -536,14 +549,17 @@ public class BattleshipPremiumV2 extends JFrame {
             
             // FR: Fait disparaître le message progressivement.
             // EN: Fades the message out progressively.
-            messageTimer = new Timer(20, ae -> {
-                messageAlpha -= 0.01f;
-                if (messageAlpha <= 0) {
-                    messageAlpha = 0;
-                    animatedMessage = null;
-                    ((Timer)ae.getSource()).stop();
+            messageTimer = new Timer(20, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    messageAlpha -= 0.01f;
+                    if (messageAlpha <= 0) {
+                        messageAlpha = 0;
+                        animatedMessage = null;
+                        ((Timer)e.getSource()).stop();
+                    }
+                    repaint();
                 }
-                repaint();
             });
             messageTimer.setInitialDelay(1000); // FR: Délai avant le début du fondu. / EN: Delay before the fade starts.
             messageTimer.start();
@@ -552,11 +568,11 @@ public class BattleshipPremiumV2 extends JFrame {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            var g2d = (Graphics2D) g;
+            Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             
             // FR: Dessine le fond en dégradé. / EN: Draws the gradient background.
-            var gp = new GradientPaint(0, 0, Theme.COLOR_BACKGROUND_START, 0, getHeight(), Theme.COLOR_BACKGROUND_END);
+            GradientPaint gp = new GradientPaint(0, 0, Theme.COLOR_BACKGROUND_START, 0, getHeight(), Theme.COLOR_BACKGROUND_END);
             g2d.setPaint(gp);
             g2d.fillRect(0, 0, getWidth(), getHeight());
 
@@ -579,8 +595,21 @@ public class BattleshipPremiumV2 extends JFrame {
          * EN: Starts the main rendering loop of the game.
          */
         public void startDrawingLoop() {
-            if (gameLoopTimer != null && gameLoopTimer.isRunning()) gameLoopTimer.stop();
-            gameLoopTimer = new Timer(1000 / 60, _ -> repaint()); // ~60 FPS
+            if (gameLoopTimer != null && gameLoopTimer.isRunning()) {
+                gameLoopTimer.stop();
+            }
+            
+            // =================================================================================
+            // CORRECTION DÉFINITIVE APPLIQUÉE ICI
+            // La syntaxe lambda "e -> repaint()" a été remplacée par une classe anonyme
+            // pour assurer la compatibilité avec tous les environnements de compilation Java.
+            // =================================================================================
+            gameLoopTimer = new Timer(1000 / 60, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    repaint();
+                }
+            }); // ~60 FPS
             gameLoopTimer.start();
         }
     }
@@ -602,7 +631,7 @@ public class BattleshipPremiumV2 extends JFrame {
         
         // FR: Liste des cibles prioritaires pour l'IA (après avoir touché un navire).
         // EN: List of priority targets for the AI (after hitting a ship).
-        private final List<Point> huntTargets = new ArrayList<>();
+        private final java.util.List<Point> huntTargets = new ArrayList<>();
         private final Random random = new Random();
 
         public GameEngine(BattleshipPremiumV2 gameFrame) {
@@ -636,8 +665,8 @@ public class BattleshipPremiumV2 extends JFrame {
          * FR: Retourne la liste des navires à placer pour le niveau actuel.
          * EN: Returns the list of ships to be placed for the current level.
          */
-        public List<Ship> getShipsForCurrentLevel() {
-            var ships = new ArrayList<Ship>();
+        public java.util.List<Ship> getShipsForCurrentLevel() {
+            java.util.List<Ship> ships = new ArrayList<>();
             // FR: Le nombre de navires augmente avec les niveaux.
             // EN: The number of ships increases with levels.
             int numShips = Math.min(currentLevel / 2 + 2, 5);
@@ -654,8 +683,8 @@ public class BattleshipPremiumV2 extends JFrame {
          * EN: Randomly places the computer's ships on its grid.
          */
         public void placeComputerShips() {
-            var shipsToPlace = getShipsForCurrentLevel();
-            for (var ship : shipsToPlace) {
+            java.util.List<Ship> shipsToPlace = getShipsForCurrentLevel();
+            for (Ship ship : shipsToPlace) {
                 while (!computerBoard.placeShipRandomly(ship, random));
             }
         }
@@ -698,34 +727,37 @@ public class BattleshipPremiumV2 extends JFrame {
 
             // FR: Un timer pour simuler une pause de réflexion de l'IA.
             // EN: A timer to simulate a thinking pause for the AI.
-            var computerMoveTimer = new Timer(1500, _ -> {
-                Point target;
-                // FR: Mode "chasse" : si une cible prioritaire existe, on la vise.
-                // EN: "Hunt" mode: if a priority target exists, aim for it.
-                if (!huntTargets.isEmpty()) {
-                    target = huntTargets.remove(0);
-                } else {
-                    // FR: Mode "recherche" : tir aléatoire sur une case non touchée.
-                    // EN: "Search" mode: random shot on an untouched cell.
-                    do {
-                        target = new Point(random.nextInt(Theme.BOARD_SIZE), random.nextInt(Theme.BOARD_SIZE));
-                    } while (playerBoard.isShot(target.x, target.y));
-                }
-
-                boolean hit = playerBoard.shoot(target.x, target.y);
-                if (hit) {
-                    addHuntTargets(target.x, target.y); // FR: Ajoute les cases adjacentes aux cibles. / EN: Adds adjacent cells to targets.
-                    var sunkShip = playerBoard.getShipAt(target.x, target.y);
-                    if (sunkShip != null && sunkShip.isSunk()) {
-                        huntTargets.clear(); // FR: Le navire est coulé, on arrête la chasse. / EN: The ship is sunk, stop hunting.
-                        gameFrame.getGamePanel().showAnimatedMessage("L'ennemi a coulé un navire!");
+            Timer computerMoveTimer = new Timer(1500, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Point target;
+                    // FR: Mode "chasse" : si une cible prioritaire existe, on la vise.
+                    // EN: "Hunt" mode: if a priority target exists, aim for it.
+                    if (!huntTargets.isEmpty()) {
+                        target = huntTargets.remove(0);
                     } else {
-                        gameFrame.getGamePanel().showAnimatedMessage("L'ennemi a touché!");
+                        // FR: Mode "recherche" : tir aléatoire sur une case non touchée.
+                        // EN: "Search" mode: random shot on an untouched cell.
+                        do {
+                            target = new Point(random.nextInt(Theme.BOARD_SIZE), random.nextInt(Theme.BOARD_SIZE));
+                        } while (playerBoard.isShot(target.x, target.y));
                     }
-                }
 
-                checkGameStatus();
-                isComputerTurn = false;
+                    boolean hit = playerBoard.shoot(target.x, target.y);
+                    if (hit) {
+                        addHuntTargets(target.x, target.y); // FR: Ajoute les cases adjacentes aux cibles. / EN: Adds adjacent cells to targets.
+                        Ship sunkShip = playerBoard.getShipAt(target.x, target.y);
+                        if (sunkShip != null && sunkShip.isSunk()) {
+                            huntTargets.clear(); // FR: Le navire est coulé, on arrête la chasse. / EN: The ship is sunk, stop hunting.
+                            gameFrame.getGamePanel().showAnimatedMessage("L'ennemi a coulé un navire!");
+                        } else {
+                            gameFrame.getGamePanel().showAnimatedMessage("L'ennemi a touché!");
+                        }
+                    }
+
+                    checkGameStatus();
+                    isComputerTurn = false;
+                }
             });
             computerMoveTimer.setRepeats(false);
             computerMoveTimer.start();
@@ -788,7 +820,7 @@ public class BattleshipPremiumV2 extends JFrame {
             currentState = GameState.GAME_OVER;
             gameFrame.getGamePanel().showAnimatedMessage("GAME OVER");
             handleGameOverOrQuit();
-            var t = new Timer(3000, _ -> gameFrame.showPanel(GameState.MAIN_MENU));
+            Timer t = new Timer(3000, e -> gameFrame.showPanel(GameState.MAIN_MENU));
             t.setRepeats(false);
             t.start();
         }
@@ -802,7 +834,7 @@ public class BattleshipPremiumV2 extends JFrame {
             playerScore += 1000 * Theme.MAX_LEVEL;
             gameFrame.getGamePanel().showAnimatedMessage("VICTOIRE !");
             handleGameOverOrQuit();
-            var t = new Timer(4000, _ -> gameFrame.showPanel(GameState.MAIN_MENU));
+            Timer t = new Timer(4000, e -> gameFrame.showPanel(GameState.MAIN_MENU));
             t.setRepeats(false);
             t.start();
         }
@@ -861,7 +893,7 @@ public class BattleshipPremiumV2 extends JFrame {
         // FR: '~': Eau, 'S': Navire, 'H': Touché, 'M': Manqué
         // EN: '~': Water, 'S': Ship, 'H': Hit, 'M': Miss
         private final char[][] grid = new char[Theme.BOARD_SIZE][Theme.BOARD_SIZE];
-        private final List<Ship> ships = new ArrayList<>();
+        private final java.util.List<Ship> ships = new ArrayList<>();
 
         public Board() {
             clearShips();
@@ -885,7 +917,7 @@ public class BattleshipPremiumV2 extends JFrame {
          * EN: Checks if a ship can be placed at the given coordinates.
          */
         public boolean canPlaceShip(Ship ship) {
-             for(var p : ship.getOccupiedCells()) {
+             for(Point p : ship.getOccupiedCells()) {
                  if (!isValidCoordinate(p.x, p.y) || grid[p.x][p.y] == 'S') {
                      return false; // FR: Hors de la grille ou sur un autre navire. / EN: Outside the grid or on another ship.
                  }
@@ -899,7 +931,7 @@ public class BattleshipPremiumV2 extends JFrame {
          */
         public boolean placeShip(Ship ship) {
             if(canPlaceShip(ship)) {
-                for(var p : ship.getOccupiedCells()) grid[p.x][p.y] = 'S';
+                for(Point p : ship.getOccupiedCells()) grid[p.x][p.y] = 'S';
                 ships.add(ship);
                 return true;
             }
@@ -930,7 +962,7 @@ public class BattleshipPremiumV2 extends JFrame {
             
             if (grid[x][y] == 'S') {
                 grid[x][y] = 'H';
-                for (var ship : ships) if (ship.isHit(x, y)) break;
+                for (Ship ship : ships) if (ship.isHit(x, y)) break;
                 return true;
             } else {
                 grid[x][y] = 'M';
@@ -939,8 +971,8 @@ public class BattleshipPremiumV2 extends JFrame {
         }
         
         public Ship getShipAt(int x, int y) {
-             for (var ship : ships) {
-                for(var p : ship.getOccupiedCells()) {
+             for (Ship ship : ships) {
+                for(Point p : ship.getOccupiedCells()) {
                     if (p.x == x && p.y == y) return ship;
                 }
             }
@@ -948,7 +980,15 @@ public class BattleshipPremiumV2 extends JFrame {
         }
         
         public boolean isShot(int x, int y) { return grid[x][y] == 'H' || grid[x][y] == 'M'; }
-        public boolean areAllShipsSunk() { return ships.stream().allMatch(Ship::isSunk); }
+        
+        public boolean areAllShipsSunk() {
+            for (Ship ship : ships) {
+                if (!ship.isSunk()) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         /**
          * FR: Dessine la grille et son contenu.
@@ -968,19 +1008,21 @@ public class BattleshipPremiumV2 extends JFrame {
                     g2d.drawRect(x, y, Theme.CELL_SIZE, Theme.CELL_SIZE);
 
                     switch (grid[i][j]) {
-                        case 'H' -> {
+                        case 'H':
                             g2d.setColor(Theme.COLOR_HIT);
                             g2d.fillRect(x+2, y+2, Theme.CELL_SIZE-4, Theme.CELL_SIZE-4);
-                        }
-                        case 'M' -> {
+                            break;
+                        case 'M':
                             g2d.setColor(Theme.COLOR_MISS);
                             g2d.fillOval(x + Theme.CELL_SIZE / 2 - 4, y + Theme.CELL_SIZE / 2 - 4, 8, 8);
-                        }
+                            break;
                     }
                 }
             }
             if (!hideShips) {
-                for (var ship : ships) ship.draw(g2d, offsetX, offsetY);
+                for (Ship ship : ships) {
+                    ship.draw(g2d, offsetX, offsetY);
+                }
             }
         }
     }
@@ -995,7 +1037,7 @@ public class BattleshipPremiumV2 extends JFrame {
         private int hitCount;
         private int startX, startY;
         private boolean isHorizontal;
-        private List<Point> occupiedCells = new ArrayList<>();
+        private java.util.List<Point> occupiedCells = new ArrayList<>();
 
         public Ship(int size, String type) {
             this.size = size;
@@ -1026,8 +1068,8 @@ public class BattleshipPremiumV2 extends JFrame {
          * FR: Calcule toutes les cellules occupées par le navire.
          * EN: Calculates all the cells occupied by the ship.
          */
-        private List<Point> calculateOccupiedCells(int startX, int startY) {
-            var cells = new ArrayList<Point>();
+        private java.util.List<Point> calculateOccupiedCells(int startX, int startY) {
+            java.util.List<Point> cells = new ArrayList<>();
             for (int i = 0; i < size; i++) {
                 cells.add(new Point(isHorizontal ? startX + i : startX, isHorizontal ? startY : startY + i));
             }
@@ -1040,10 +1082,10 @@ public class BattleshipPremiumV2 extends JFrame {
          */
         public void draw(Graphics2D g2d, int offsetX, int offsetY) {
             g2d.setColor(Theme.COLOR_SHIP);
-            var drawX = offsetX + startX * Theme.CELL_SIZE;
-            var drawY = offsetY + startY * Theme.CELL_SIZE;
-            var width = isHorizontal ? size * Theme.CELL_SIZE : Theme.CELL_SIZE;
-            var height = isHorizontal ? Theme.CELL_SIZE : size * Theme.CELL_SIZE;
+            int drawX = offsetX + startX * Theme.CELL_SIZE;
+            int drawY = offsetY + startY * Theme.CELL_SIZE;
+            int width = isHorizontal ? size * Theme.CELL_SIZE : Theme.CELL_SIZE;
+            int height = isHorizontal ? Theme.CELL_SIZE : size * Theme.CELL_SIZE;
             g2d.fillRect(drawX, drawY, width, height);
             g2d.setColor(Color.WHITE);
             g2d.drawRect(drawX, drawY, width, height);
@@ -1055,10 +1097,10 @@ public class BattleshipPremiumV2 extends JFrame {
          */
         public void drawGhost(Graphics2D g2d, int offsetX, int offsetY, boolean canPlace) {
              g2d.setColor(canPlace ? Theme.COLOR_GHOST_OK : Theme.COLOR_GHOST_BAD);
-            var drawX = offsetX + startX * Theme.CELL_SIZE;
-            var drawY = offsetY + startY * Theme.CELL_SIZE;
-            var width = isHorizontal ? size * Theme.CELL_SIZE : Theme.CELL_SIZE;
-            var height = isHorizontal ? Theme.CELL_SIZE : size * Theme.CELL_SIZE;
+            int drawX = offsetX + startX * Theme.CELL_SIZE;
+            int drawY = offsetY + startY * Theme.CELL_SIZE;
+            int width = isHorizontal ? size * Theme.CELL_SIZE : Theme.CELL_SIZE;
+            int height = isHorizontal ? Theme.CELL_SIZE : size * Theme.CELL_SIZE;
             g2d.fillRect(drawX, drawY, width, height);
         }
         
@@ -1067,14 +1109,14 @@ public class BattleshipPremiumV2 extends JFrame {
         public String getType() { return type; }
         public boolean isSunk() { return hitCount >= size; }
         public void setOrientation(boolean isHorizontal) { this.isHorizontal = isHorizontal; }
-        public List<Point> getOccupiedCells() { return occupiedCells; }
+        public java.util.List<Point> getOccupiedCells() { return occupiedCells; }
     }
 
     /**
      * FR: Représente une entrée dans le tableau des meilleurs scores.
      * EN: Represents an entry in the high score table.
      */
-    private static class HighScoreEntry implements Comparable<HighScoreEntry> {
+    private static class HighScoreEntry implements Comparable<HighScoreEntry>, Serializable {
         private final String playerName;
         private final long score;
 
@@ -1091,7 +1133,7 @@ public class BattleshipPremiumV2 extends JFrame {
         @Override public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            var that = (HighScoreEntry) o;
+            HighScoreEntry that = (HighScoreEntry) o;
             return score == that.score && playerName.equals(that.playerName);
         }
         @Override public int hashCode() { return Objects.hash(playerName, score); }
@@ -1104,7 +1146,7 @@ public class BattleshipPremiumV2 extends JFrame {
     private static class HighScoreManager {
         private static final String HIGHSCORE_FILE = "highscores_premium.json";
         private static final int MAX_HIGHSCORES = 10;
-        private List<HighScoreEntry> highScores;
+        private java.util.List<HighScoreEntry> highScores;
 
         public HighScoreManager() {
             this.highScores = new ArrayList<>();
@@ -1129,7 +1171,7 @@ public class BattleshipPremiumV2 extends JFrame {
          */
         public void loadHighScores() {
             this.highScores.clear();
-            var file = Paths.get(HIGHSCORE_FILE);
+            java.nio.file.Path file = Paths.get(HIGHSCORE_FILE);
             if (!Files.exists(file)) {
                 return; // FR: Normal au premier lancement. / EN: Normal on first launch.
             }
@@ -1169,9 +1211,9 @@ public class BattleshipPremiumV2 extends JFrame {
          * EN: Saves the list of scores to the JSON file.
          */
         public void saveHighScores() {
-            var sb = new StringBuilder("[\n");
+            StringBuilder sb = new StringBuilder("[\n");
             for (int i = 0; i < highScores.size(); i++) {
-                var entry = highScores.get(i);
+                HighScoreEntry entry = highScores.get(i);
                 // FR: Échappe les caractères spéciaux pour un JSON valide.
                 // EN: Escapes special characters for valid JSON.
                 String safePlayerName = entry.getPlayerName()
@@ -1190,7 +1232,7 @@ public class BattleshipPremiumV2 extends JFrame {
             }
             sb.append("]");
 
-            try (var writer = Files.newBufferedWriter(Paths.get(HIGHSCORE_FILE), StandardCharsets.UTF_8)) {
+            try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(HIGHSCORE_FILE), StandardCharsets.UTF_8)) {
                 writer.write(sb.toString());
             } catch (IOException e) {
                  System.err.println("Erreur critique lors de la sauvegarde des scores : " + e.getMessage());
@@ -1201,7 +1243,7 @@ public class BattleshipPremiumV2 extends JFrame {
             }
         }
 
-        public List<HighScoreEntry> getHighScores() { return highScores; }
+        public java.util.List<HighScoreEntry> getHighScores() { return highScores; }
 
         /**
          * FR: Vérifie si un score est assez élevé pour entrer dans le top 10.
